@@ -56,6 +56,12 @@ class Nudge_Chat_Widget_Render {
 				'finalMessage' => $options['final_message'],
 			)
 		);
+
+		/**
+		 * Se dispara después de encolar los assets del widget. Punto de
+		 * extensión para add-ons (por ejemplo, para encolar su propio JS).
+		 */
+		do_action( 'nudge_chat_widget_after_enqueue', $options );
 	}
 
 	public function render_markup() {
@@ -63,8 +69,10 @@ class Nudge_Chat_Widget_Render {
 			return;
 		}
 
-		$options = Nudge_Chat_Widget_Admin_Settings::get_options();
-		$bot_name = esc_html( $options['bot_name'] );
+		$options    = Nudge_Chat_Widget_Admin_Settings::get_options();
+		$bot_name   = esc_html( $options['bot_name'] );
+		$avatar_id  = ! empty( $options['avatar_id'] ) ? absint( $options['avatar_id'] ) : 0;
+		$avatar_url = $avatar_id ? wp_get_attachment_image_url( $avatar_id, 'thumbnail' ) : '';
 		?>
 		<div id="nudge-chat-widget">
 			<button class="ncw-launcher" id="ncw-open" aria-label="Abrir chat de <?php echo $bot_name; ?>">
@@ -76,7 +84,11 @@ class Nudge_Chat_Widget_Render {
 			<div class="ncw-panel" id="ncw-panel" role="dialog" aria-label="Chat con <?php echo $bot_name; ?>" hidden>
 				<div class="ncw-head">
 					<div class="ncw-avatar">
-						<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3 2 5 5.5 5 10 0 1.6-.4 3-1 4.3l-1.5-1c.3-1 .5-2.1.5-3.3 0-3-1.2-5.6-3-7.4C9.2 6.4 8 9 8 12c0 1.2.2 2.3.5 3.3l-1.5 1C6.4 15 6 13.6 6 12c0-4.5 2-8 6-10zm0 9.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM9 18l1.5-1.2c.5.2 1 .3 1.5.3s1-.1 1.5-.3L15 18l-.8 3.2L12 19.7 9.8 21.2 9 18z"/></svg>
+						<?php if ( $avatar_url ) : ?>
+							<img src="<?php echo esc_url( $avatar_url ); ?>" alt="" />
+						<?php else : ?>
+							<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3 2 5 5.5 5 10 0 1.6-.4 3-1 4.3l-1.5-1c.3-1 .5-2.1.5-3.3 0-3-1.2-5.6-3-7.4C9.2 6.4 8 9 8 12c0 1.2.2 2.3.5 3.3l-1.5 1C6.4 15 6 13.6 6 12c0-4.5 2-8 6-10zm0 9.5a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM9 18l1.5-1.2c.5.2 1 .3 1.5.3s1-.1 1.5-.3L15 18l-.8 3.2L12 19.7 9.8 21.2 9 18z"/></svg>
+						<?php endif; ?>
 					</div>
 					<div class="ncw-head-txt">
 						<strong><?php echo $bot_name; ?></strong>
@@ -89,5 +101,10 @@ class Nudge_Chat_Widget_Render {
 			</div>
 		</div>
 		<?php
+		/**
+		 * Se dispara después del markup del widget. Punto de extensión para
+		 * add-ons (por ejemplo, para imprimir markup propio en el footer).
+		 */
+		do_action( 'nudge_chat_widget_after_markup', $options );
 	}
 }

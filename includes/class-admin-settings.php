@@ -84,6 +84,7 @@ class Nudge_Chat_Widget_Admin_Settings {
 			'status_text'     => 'Respondemos al instante',
 			'color_primary'   => '#0B1220',
 			'color_accent'    => '#C9A227',
+			'avatar_id'       => 0,
 			'final_message'   => '¡Listo, {nombre}! Tocá el botón y nos llega tu consulta con todos los datos. Te respondemos enseguida 🙌',
 			'flow'            => $default_flow,
 		);
@@ -159,6 +160,7 @@ class Nudge_Chat_Widget_Admin_Settings {
 
 		$output['color_primary'] = isset( $input['color_primary'] ) ? sanitize_hex_color( $input['color_primary'] ) : '#0B1220';
 		$output['color_accent']  = isset( $input['color_accent'] ) ? sanitize_hex_color( $input['color_accent'] ) : '#C9A227';
+		$output['avatar_id']     = isset( $input['avatar_id'] ) ? absint( $input['avatar_id'] ) : 0;
 
 		$output['final_message'] = isset( $input['final_message'] ) ? sanitize_textarea_field( $input['final_message'] ) : '';
 
@@ -190,7 +192,41 @@ class Nudge_Chat_Widget_Admin_Settings {
 		}
 		wp_enqueue_style( 'wp-color-picker' );
 		wp_enqueue_script( 'wp-color-picker' );
-		wp_add_inline_script( 'wp-color-picker', "jQuery(function($){ $('.ncw-color-field').wpColorPicker(); });" );
+		wp_enqueue_media();
+
+		$inline_js = <<<JS
+jQuery(function(\$){
+	\$('.ncw-color-field').wpColorPicker();
+
+	var frame;
+	\$('#ncw_avatar_choose').on('click', function(e){
+		e.preventDefault();
+		if (frame) { frame.open(); return; }
+		frame = wp.media({
+			title: 'Elegir avatar del asistente',
+			button: { text: 'Usar esta imagen' },
+			multiple: false,
+			library: { type: 'image' }
+		});
+		frame.on('select', function(){
+			var att = frame.state().get('selection').first().toJSON();
+			var thumb = (att.sizes && att.sizes.thumbnail) ? att.sizes.thumbnail.url : att.url;
+			\$('#ncw_avatar_id').val(att.id);
+			\$('#ncw_avatar_preview').attr('src', thumb).show();
+			\$('#ncw_avatar_remove').show();
+		});
+		frame.open();
+	});
+
+	\$('#ncw_avatar_remove').on('click', function(e){
+		e.preventDefault();
+		\$('#ncw_avatar_id').val('');
+		\$('#ncw_avatar_preview').hide().attr('src', '');
+		\$(this).hide();
+	});
+});
+JS;
+		wp_add_inline_script( 'wp-color-picker', $inline_js );
 	}
 
 	public function render_settings_page() {
@@ -243,6 +279,20 @@ class Nudge_Chat_Widget_Admin_Settings {
 						<th scope="row"><label for="ncw_color_accent">Color de acento</label></th>
 						<td>
 							<input type="text" id="ncw_color_accent" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[color_accent]" value="<?php echo esc_attr( $options['color_accent'] ); ?>" class="ncw-color-field" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="ncw_avatar_choose">Avatar del asistente</label></th>
+						<td>
+							<?php
+							$avatar_id  = ! empty( $options['avatar_id'] ) ? absint( $options['avatar_id'] ) : 0;
+							$avatar_src = $avatar_id ? wp_get_attachment_image_url( $avatar_id, 'thumbnail' ) : '';
+							?>
+							<img id="ncw_avatar_preview" src="<?php echo esc_url( $avatar_src ); ?>" style="width:56px;height:56px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;<?php echo $avatar_src ? '' : 'display:none;'; ?>" alt="" />
+							<input type="hidden" id="ncw_avatar_id" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[avatar_id]" value="<?php echo esc_attr( $avatar_id ); ?>" />
+							<button type="button" class="button" id="ncw_avatar_choose">Elegir imagen</button>
+							<button type="button" class="button" id="ncw_avatar_remove" style="<?php echo $avatar_src ? '' : 'display:none;'; ?>">Quitar</button>
+							<p class="description">Opcional. Si no cargás una imagen, se usa el ícono de chat por defecto.</p>
 						</td>
 					</tr>
 				</table>
