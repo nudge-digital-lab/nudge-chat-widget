@@ -3,7 +3,7 @@
  * Plugin Name: Nudge Chat Widget
  * Plugin URI: https://github.com/nudge-digital-lab/nudge-chat-widget
  * Description: Widget de chat flotante que califica leads con un flujo de preguntas cortas y los deriva a WhatsApp con todo el contexto.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Nudge
  * Author URI: https://github.com/nudge-digital-lab
  * License: GPL-2.0+
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NUDGE_CHAT_WIDGET_VERSION', '1.1.0' );
+define( 'NUDGE_CHAT_WIDGET_VERSION', '1.1.1' );
 define( 'NUDGE_CHAT_WIDGET_PATH', plugin_dir_path( __FILE__ ) );
 define( 'NUDGE_CHAT_WIDGET_URL', plugin_dir_url( __FILE__ ) );
 

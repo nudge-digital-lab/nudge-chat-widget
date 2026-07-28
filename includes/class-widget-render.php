@@ -30,7 +30,7 @@ class Nudge_Chat_Widget_Render {
 		);
 
 		$inline_css = sprintf(
-			'#nudge-chat-widget{--ncw-navy:%s;--ncw-orange:%s;}',
+			'#nudge-chat-widget{--ncw-primary:%s;--ncw-accent:%s;}',
 			esc_html( $options['color_primary'] ),
 			esc_html( $options['color_accent'] )
 		);

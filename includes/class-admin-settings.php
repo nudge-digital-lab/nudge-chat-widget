@@ -82,8 +82,8 @@ class Nudge_Chat_Widget_Admin_Settings {
 			'whatsapp_number' => '',
 			'bot_name'        => 'Nudge',
 			'status_text'     => 'Respondemos al instante',
-			'color_primary'   => '#0A1F44',
-			'color_accent'    => '#FF5C00',
+			'color_primary'   => '#0B1220',
+			'color_accent'    => '#C9A227',
 			'final_message'   => '¡Listo, {nombre}! Tocá el botón y nos llega tu consulta con todos los datos. Te respondemos enseguida 🙌',
 			'flow'            => $default_flow,
 		);
@@ -157,8 +157,8 @@ class Nudge_Chat_Widget_Admin_Settings {
 		$output['bot_name']    = isset( $input['bot_name'] ) ? sanitize_text_field( $input['bot_name'] ) : 'Nudge';
 		$output['status_text'] = isset( $input['status_text'] ) ? sanitize_text_field( $input['status_text'] ) : 'Respondemos al instante';
 
-		$output['color_primary'] = isset( $input['color_primary'] ) ? sanitize_hex_color( $input['color_primary'] ) : '#0A1F44';
-		$output['color_accent']  = isset( $input['color_accent'] ) ? sanitize_hex_color( $input['color_accent'] ) : '#FF5C00';
+		$output['color_primary'] = isset( $input['color_primary'] ) ? sanitize_hex_color( $input['color_primary'] ) : '#0B1220';
+		$output['color_accent']  = isset( $input['color_accent'] ) ? sanitize_hex_color( $input['color_accent'] ) : '#C9A227';
 
 		$output['final_message'] = isset( $input['final_message'] ) ? sanitize_textarea_field( $input['final_message'] ) : '';
 
