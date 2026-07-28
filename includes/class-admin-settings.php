@@ -7,6 +7,60 @@ class Nudge_Chat_Widget_Admin_Settings {
 
 	const OPTION_KEY = 'nudge_chat_widget_options';
 
+	/**
+	 * Estructura fija de los pasos del chat: clave y tipo no son editables
+	 * (de eso depende el armado del mensaje final de WhatsApp). Lo que se
+	 * puede editar desde el admin es el texto del bot, las opciones (chips)
+	 * y el placeholder de los campos de texto.
+	 */
+	public static function get_step_defs() {
+		return array(
+			array(
+				'key'         => 'nombre',
+				'type'        => 'input',
+				'label'       => 'Paso 1 — Nombre',
+				'bot'         => '¡Hola! 👋 Soy el asistente de {bot_name}. Estamos terminando la web, pero tu proyecto puede arrancar hoy. ¿Cómo es tu nombre?',
+				'placeholder' => 'Tu nombre',
+			),
+			array(
+				'key'     => 'necesidad',
+				'type'    => 'chips',
+				'label'   => 'Paso 2 — Necesidad',
+				'bot'     => 'Genial, {nombre} 🚀 ¿Qué necesitás?',
+				'options' => array( 'Crear mi tienda online', 'Rediseñar mi tienda', 'Migrar a Tiendanube', 'Otra cosa' ),
+			),
+			array(
+				'key'     => 'situacion',
+				'type'    => 'chips',
+				'label'   => 'Paso 3 — Situación actual',
+				'bot'     => '¿En qué punto estás hoy?',
+				'options' => array( 'Ya tengo tienda online', 'Tengo marca / redes', 'Arranco de cero' ),
+			),
+			array(
+				'key'     => 'plazo',
+				'type'    => 'chips',
+				'label'   => 'Paso 4 — Plazo',
+				'bot'     => '¿Para cuándo lo querrías?',
+				'options' => array( 'Lo antes posible', 'Este mes', 'En 1 a 3 meses', 'Estoy explorando' ),
+			),
+			array(
+				'key'         => 'contacto',
+				'type'        => 'input',
+				'label'       => 'Paso 5 — Contacto',
+				'bot'         => 'Perfecto. Dejame tu WhatsApp o email para coordinar 👇',
+				'placeholder' => 'WhatsApp o email',
+			),
+			array(
+				'key'         => 'extra',
+				'type'        => 'input',
+				'label'       => 'Paso 6 — Comentario (opcional)',
+				'bot'         => '¿Querés contarnos algo más? (opcional)',
+				'placeholder' => 'Escribí o tocá enviar',
+				'optional'    => true,
+			),
+		);
+	}
+
 	public function __construct() {
 		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
@@ -14,15 +68,69 @@ class Nudge_Chat_Widget_Admin_Settings {
 	}
 
 	public static function get_options() {
+		$step_defs = self::get_step_defs();
+		$default_flow = array();
+		foreach ( $step_defs as $i => $def ) {
+			$default_flow[ $i ] = array(
+				'bot'         => $def['bot'],
+				'options'     => isset( $def['options'] ) ? implode( '|', $def['options'] ) : '',
+				'placeholder' => isset( $def['placeholder'] ) ? $def['placeholder'] : '',
+			);
+		}
+
 		$defaults = array(
 			'whatsapp_number' => '',
 			'bot_name'        => 'Nudge',
 			'status_text'     => 'Respondemos al instante',
 			'color_primary'   => '#0A1F44',
 			'color_accent'    => '#FF5C00',
+			'final_message'   => '¡Listo, {nombre}! Tocá el botón y nos llega tu consulta con todos los datos. Te respondemos enseguida 🙌',
+			'flow'            => $default_flow,
 		);
 
-		return wp_parse_args( get_option( self::OPTION_KEY, array() ), $defaults );
+		$stored = get_option( self::OPTION_KEY, array() );
+		$merged = wp_parse_args( $stored, $defaults );
+
+		// Completa pasos faltantes si se agregó algún paso nuevo en una versión futura.
+		$merged['flow'] = isset( $merged['flow'] ) && is_array( $merged['flow'] )
+			? array_replace( $default_flow, $merged['flow'] )
+			: $default_flow;
+
+		return $merged;
+	}
+
+	/**
+	 * Devuelve el flow final, combinando la estructura fija (key/type) con
+	 * el contenido editable guardado, listo para pasarle al JS del widget.
+	 */
+	public static function get_resolved_flow() {
+		$options   = self::get_options();
+		$step_defs = self::get_step_defs();
+		$resolved  = array();
+
+		foreach ( $step_defs as $i => $def ) {
+			$saved = isset( $options['flow'][ $i ] ) ? $options['flow'][ $i ] : array();
+
+			$step = array(
+				'key'  => $def['key'],
+				'type' => $def['type'],
+				'bot'  => isset( $saved['bot'] ) && '' !== $saved['bot'] ? $saved['bot'] : $def['bot'],
+			);
+
+			if ( 'chips' === $def['type'] ) {
+				$options_str = isset( $saved['options'] ) && '' !== $saved['options'] ? $saved['options'] : implode( '|', $def['options'] );
+				$step['options'] = array_values( array_filter( array_map( 'trim', explode( '|', $options_str ) ) ) );
+			} else {
+				$step['placeholder'] = isset( $saved['placeholder'] ) && '' !== $saved['placeholder'] ? $saved['placeholder'] : $def['placeholder'];
+				if ( ! empty( $def['optional'] ) ) {
+					$step['optional'] = true;
+				}
+			}
+
+			$resolved[] = $step;
+		}
+
+		return $resolved;
 	}
 
 	public function add_settings_page() {
@@ -52,6 +160,27 @@ class Nudge_Chat_Widget_Admin_Settings {
 		$output['color_primary'] = isset( $input['color_primary'] ) ? sanitize_hex_color( $input['color_primary'] ) : '#0A1F44';
 		$output['color_accent']  = isset( $input['color_accent'] ) ? sanitize_hex_color( $input['color_accent'] ) : '#FF5C00';
 
+		$output['final_message'] = isset( $input['final_message'] ) ? sanitize_textarea_field( $input['final_message'] ) : '';
+
+		$step_defs = self::get_step_defs();
+		$flow      = array();
+		foreach ( $step_defs as $i => $def ) {
+			$posted = isset( $input['flow'][ $i ] ) ? $input['flow'][ $i ] : array();
+
+			$options_str = '';
+			if ( 'chips' === $def['type'] && isset( $posted['options'] ) ) {
+				$opts        = array_filter( array_map( 'sanitize_text_field', explode( '|', $posted['options'] ) ) );
+				$options_str = implode( '|', $opts );
+			}
+
+			$flow[ $i ] = array(
+				'bot'         => isset( $posted['bot'] ) ? sanitize_textarea_field( $posted['bot'] ) : '',
+				'options'     => $options_str,
+				'placeholder' => isset( $posted['placeholder'] ) ? sanitize_text_field( $posted['placeholder'] ) : '',
+			);
+		}
+		$output['flow'] = $flow;
+
 		return $output;
 	}
 
@@ -69,7 +198,8 @@ class Nudge_Chat_Widget_Admin_Settings {
 			return;
 		}
 
-		$options = self::get_options();
+		$options   = self::get_options();
+		$step_defs = self::get_step_defs();
 		?>
 		<div class="wrap">
 			<h1>Nudge Chat Widget</h1>
@@ -94,6 +224,7 @@ class Nudge_Chat_Widget_Admin_Settings {
 						<th scope="row"><label for="ncw_bot_name">Nombre del asistente</label></th>
 						<td>
 							<input type="text" id="ncw_bot_name" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[bot_name]" value="<?php echo esc_attr( $options['bot_name'] ); ?>" class="regular-text" />
+							<p class="description">Podés usar <code>{bot_name}</code> dentro de los mensajes del chat para insertar este nombre.</p>
 						</td>
 					</tr>
 					<tr>
@@ -115,6 +246,49 @@ class Nudge_Chat_Widget_Admin_Settings {
 						</td>
 					</tr>
 				</table>
+
+				<h2>Preguntas del chat</h2>
+				<p class="description">Editá el texto que dice el asistente en cada paso. Podés usar <code>{bot_name}</code> y <code>{nombre}</code> (el nombre que escribió el visitante en el paso 1) como variables. En los pasos de opciones, separá cada opción con <code>|</code>.</p>
+
+				<table class="form-table" role="presentation">
+					<?php foreach ( $step_defs as $i => $def ) :
+						$saved = isset( $options['flow'][ $i ] ) ? $options['flow'][ $i ] : array();
+						$bot_value = isset( $saved['bot'] ) && '' !== $saved['bot'] ? $saved['bot'] : $def['bot'];
+						?>
+						<tr>
+							<th scope="row"><?php echo esc_html( $def['label'] ); ?></th>
+							<td>
+								<p>
+									<label for="ncw_flow_<?php echo esc_attr( $i ); ?>_bot">Mensaje del asistente</label><br />
+									<textarea id="ncw_flow_<?php echo esc_attr( $i ); ?>_bot" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[flow][<?php echo esc_attr( $i ); ?>][bot]" rows="2" class="large-text"><?php echo esc_textarea( $bot_value ); ?></textarea>
+								</p>
+								<?php if ( 'chips' === $def['type'] ) :
+									$options_value = isset( $saved['options'] ) && '' !== $saved['options'] ? $saved['options'] : implode( '|', $def['options'] );
+									?>
+									<p>
+										<label for="ncw_flow_<?php echo esc_attr( $i ); ?>_options">Opciones (separadas por <code>|</code>)</label><br />
+										<input type="text" id="ncw_flow_<?php echo esc_attr( $i ); ?>_options" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[flow][<?php echo esc_attr( $i ); ?>][options]" value="<?php echo esc_attr( $options_value ); ?>" class="large-text" />
+									</p>
+								<?php else :
+									$placeholder_value = isset( $saved['placeholder'] ) && '' !== $saved['placeholder'] ? $saved['placeholder'] : $def['placeholder'];
+									?>
+									<p>
+										<label for="ncw_flow_<?php echo esc_attr( $i ); ?>_placeholder">Placeholder del campo</label><br />
+										<input type="text" id="ncw_flow_<?php echo esc_attr( $i ); ?>_placeholder" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[flow][<?php echo esc_attr( $i ); ?>][placeholder]" value="<?php echo esc_attr( $placeholder_value ); ?>" class="regular-text" />
+									</p>
+								<?php endif; ?>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					<tr>
+						<th scope="row"><label for="ncw_final_message">Mensaje final</label></th>
+						<td>
+							<textarea id="ncw_final_message" name="<?php echo esc_attr( self::OPTION_KEY ); ?>[final_message]" rows="2" class="large-text"><?php echo esc_textarea( $options['final_message'] ); ?></textarea>
+							<p class="description">Se muestra en el chat justo antes del botón de enviar por WhatsApp.</p>
+						</td>
+					</tr>
+				</table>
+
 				<?php submit_button(); ?>
 			</form>
 		</div>

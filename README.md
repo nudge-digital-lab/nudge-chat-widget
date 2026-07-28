@@ -18,7 +18,11 @@ Plugin de WordPress: widget de chat flotante que califica leads con un flujo cor
 
 ## Personalizar el flujo de preguntas
 
-El flujo de preguntas (`FLOW`) está en `assets/js/nudge-chat-widget.js`. Editá ese array para cambiar preguntas, opciones o el copy, según el proyecto/cliente donde se instale.
+Desde **Ajustes → Nudge Chat Widget** se puede editar, por cada uno de los 6 pasos del chat: el mensaje del bot, las opciones (para los pasos de tipo chips, separadas por `|`) y el placeholder (para los pasos de tipo input). No hace falta tocar código.
+
+Variables disponibles dentro de los mensajes: `{bot_name}` (nombre del asistente) y `{nombre}` (lo que escribió el visitante en el paso 1).
+
+La clave y el tipo de cada paso (`nombre`, `necesidad`, `situacion`, `plazo`, `contacto`, `extra`) son fijos — de eso depende el armado del mensaje final de WhatsApp — y están definidos en `Nudge_Chat_Widget_Admin_Settings::get_step_defs()` dentro de `includes/class-admin-settings.php`.
 
 ## Estructura
 

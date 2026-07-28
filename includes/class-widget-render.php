@@ -48,10 +48,12 @@ class Nudge_Chat_Widget_Render {
 			'nudge-chat-widget',
 			'NudgeChatWidgetData',
 			array(
-				'whatsapp'   => $options['whatsapp_number'],
-				'botName'    => $options['bot_name'],
-				'statusText' => $options['status_text'],
-				'siteLabel'  => wp_parse_url( home_url(), PHP_URL_HOST ),
+				'whatsapp'     => $options['whatsapp_number'],
+				'botName'      => $options['bot_name'],
+				'statusText'   => $options['status_text'],
+				'siteLabel'    => wp_parse_url( home_url(), PHP_URL_HOST ),
+				'flow'         => Nudge_Chat_Widget_Admin_Settings::get_resolved_flow(),
+				'finalMessage' => $options['final_message'],
 			)
 		);
 	}
