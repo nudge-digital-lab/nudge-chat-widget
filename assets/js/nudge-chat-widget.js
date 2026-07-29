@@ -4,7 +4,7 @@
 	var BOT_NAME = cfg.botName || 'Nudge';
 	var SITE_LABEL = cfg.siteLabel || '';
 	var FLOW = cfg.flow || [];
-	var FINAL_MESSAGE = cfg.finalMessage || "¡Listo, {nombre}! Tocá el botón y nos llega tu consulta con todos los datos. Te respondemos enseguida 🙌";
+	var FINAL_MESSAGE = cfg.finalMessage || "¡Listo, {nombre}! Tocá el botón para enviarnos tu consulta — solemos responder en pocos minutos ⏱️";
 
 	if (!WHATSAPP || !FLOW.length) return;
 
