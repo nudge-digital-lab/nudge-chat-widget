@@ -19,7 +19,7 @@ class Nudge_Chat_Widget_Admin_Settings {
 				'key'         => 'nombre',
 				'type'        => 'input',
 				'label'       => 'Paso 1 — Nombre',
-				'bot'         => '¡Hola! 👋 Soy el asistente de {bot_name}. Estamos terminando la web, pero tu proyecto puede arrancar hoy. ¿Cómo es tu nombre?',
+				'bot'         => '¡Hola! 👋 Soy el asistente de {bot_name}. Contame sobre tu proyecto y coordinamos enseguida. ¿Cómo es tu nombre?',
 				'placeholder' => 'Tu nombre',
 			),
 			array(
@@ -27,14 +27,14 @@ class Nudge_Chat_Widget_Admin_Settings {
 				'type'    => 'chips',
 				'label'   => 'Paso 2 — Necesidad',
 				'bot'     => 'Genial, {nombre} 🚀 ¿Qué necesitás?',
-				'options' => array( 'Crear mi tienda online', 'Rediseñar mi tienda', 'Migrar a Tiendanube', 'Otra cosa' ),
+				'options' => array( 'Sitio web nuevo', 'Rediseño de mi sitio actual', 'Marketing digital', 'Otra cosa' ),
 			),
 			array(
 				'key'     => 'situacion',
 				'type'    => 'chips',
 				'label'   => 'Paso 3 — Situación actual',
 				'bot'     => '¿En qué punto estás hoy?',
-				'options' => array( 'Ya tengo tienda online', 'Tengo marca / redes', 'Arranco de cero' ),
+				'options' => array( 'Ya tengo sitio web', 'Tengo marca / redes', 'Arranco de cero' ),
 			),
 			array(
 				'key'     => 'plazo',

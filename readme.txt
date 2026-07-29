@@ -4,7 +4,7 @@ Tags: whatsapp, chat, leads, chatbot
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,9 @@ Nudge Chat Widget agrega un botón de chat flotante a tu sitio. El visitante res
 3. Configurá tu número de WhatsApp en Ajustes → Nudge Chat Widget.
 
 == Changelog ==
+
+= 1.2.1 =
+* Preguntas y opciones por defecto del chat generalizadas para cualquier tipo de negocio (antes estaban orientadas a e-commerce/Tiendanube).
 
 = 1.2.0 =
 * Nuevo: avatar personalizado del asistente (Ajustes → Nudge Chat Widget), usando la librería de medios de WordPress.
