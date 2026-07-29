@@ -194,38 +194,34 @@ class Nudge_Chat_Widget_Admin_Settings {
 		wp_enqueue_script( 'wp-color-picker' );
 		wp_enqueue_media();
 
-		$inline_js = <<<JS
-jQuery(function(\$){
-	\$('.ncw-color-field').wpColorPicker();
-
-	var frame;
-	\$('#ncw_avatar_choose').on('click', function(e){
-		e.preventDefault();
-		if (frame) { frame.open(); return; }
-		frame = wp.media({
-			title: 'Elegir avatar del asistente',
-			button: { text: 'Usar esta imagen' },
-			multiple: false,
-			library: { type: 'image' }
-		});
-		frame.on('select', function(){
-			var att = frame.state().get('selection').first().toJSON();
-			var thumb = (att.sizes && att.sizes.thumbnail) ? att.sizes.thumbnail.url : att.url;
-			\$('#ncw_avatar_id').val(att.id);
-			\$('#ncw_avatar_preview').attr('src', thumb).show();
-			\$('#ncw_avatar_remove').show();
-		});
-		frame.open();
-	});
-
-	\$('#ncw_avatar_remove').on('click', function(e){
-		e.preventDefault();
-		\$('#ncw_avatar_id').val('');
-		\$('#ncw_avatar_preview').hide().attr('src', '');
-		\$(this).hide();
-	});
-});
-JS;
+		$inline_js  = 'jQuery(function($){';
+		$inline_js .= '$(".ncw-color-field").wpColorPicker();';
+		$inline_js .= 'var frame;';
+		$inline_js .= '$("#ncw_avatar_choose").on("click", function(e){';
+		$inline_js .= 'e.preventDefault();';
+		$inline_js .= 'if (frame) { frame.open(); return; }';
+		$inline_js .= 'frame = wp.media({';
+		$inline_js .= 'title: "Elegir avatar del asistente",';
+		$inline_js .= 'button: { text: "Usar esta imagen" },';
+		$inline_js .= 'multiple: false,';
+		$inline_js .= 'library: { type: "image" }';
+		$inline_js .= '});';
+		$inline_js .= 'frame.on("select", function(){';
+		$inline_js .= 'var att = frame.state().get("selection").first().toJSON();';
+		$inline_js .= 'var thumb = (att.sizes && att.sizes.thumbnail) ? att.sizes.thumbnail.url : att.url;';
+		$inline_js .= '$("#ncw_avatar_id").val(att.id);';
+		$inline_js .= '$("#ncw_avatar_preview").attr("src", thumb).show();';
+		$inline_js .= '$("#ncw_avatar_remove").show();';
+		$inline_js .= '});';
+		$inline_js .= 'frame.open();';
+		$inline_js .= '});';
+		$inline_js .= '$("#ncw_avatar_remove").on("click", function(e){';
+		$inline_js .= 'e.preventDefault();';
+		$inline_js .= '$("#ncw_avatar_id").val("");';
+		$inline_js .= '$("#ncw_avatar_preview").hide().attr("src", "");';
+		$inline_js .= '$(this).hide();';
+		$inline_js .= '});';
+		$inline_js .= '});';
 		wp_add_inline_script( 'wp-color-picker', $inline_js );
 	}
 
